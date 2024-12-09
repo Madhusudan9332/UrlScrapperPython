@@ -13,6 +13,7 @@ if not os.path.exists(folder_name):
 
 # Initialize a new column for scraped content
 df['Scraped_Content'] = None
+unfatched_urls = []
 
 def scrapData(index,url):
     try:
@@ -71,15 +72,22 @@ def scrapData(index,url):
 # Scrape content for each URL
 for index, row in df.iterrows():
     url = row['url']
-    attempt = 0
     max_attempts = 3
-    while(scrapData(index,url) == False and attempt < max_attempts):
-        attempt = attempt + 1
-        print(f"{attempt} attempt done Data not fetched")
-    if(attempt == max_attempts):
+    success = False
+    # while(scrapData(index,url) == False and attempt < max_attempts):
+    for attempt in range(max_attempts):
+        if(scrapData(index,url) == True):
+            success = True
+            break
+        print(f"{attempt + 1} attempt done Data not fetched")
+    if(success == False):
         print(f"check the Url : {url} ,3 attempts failed")
+        unfatched_urls.append(url)
     print("Data fetched")
         
+unfatched_urls_file = f"{folder_name}/unfatched_urls.txt"
+with open(unfatched_urls_file, "w", encoding="utf-8") as file:
+    file.write(f"These are the unfatched urls : {unfatched_urls}")
 
 
 # Display the updated DataFrame 
