@@ -14,11 +14,8 @@ if not os.path.exists(folder_name):
 # Initialize a new column for scraped content
 df['Scraped_Content'] = None
 
-# Scrape content for each URL
-for index, row in df.iterrows():
-    url = row['url']
+def scrapData(index,url):
     try:
-        # Fetch the URL content
         response = requests.get(url)
         if response.status_code == 200:
             # Parse the HTML content
@@ -56,7 +53,7 @@ for index, row in df.iterrows():
                 </body>
                 </html>
                 """
-            file_name = f"{folder_name}/page{index}_{title}.html"
+            file_name = f"{folder_name}/page_{index}.html"
             with open(file_name, "w", encoding="utf-8") as file:
                 file.write(html_content)
                 
@@ -67,8 +64,25 @@ for index, row in df.iterrows():
             df.at[index, 'Scraped_Content'] = f"Failed to fetch: {response.status_code}"
     except Exception as e:
         df.at[index, 'Scraped_Content'] = f"Error: {e}"
+        return False
+    return True
 
-# Display the updated DataFrame
+
+# Scrape content for each URL
+for index, row in df.iterrows():
+    url = row['url']
+    attempt = 0
+    max_attempts = 3
+    while(scrapData(index,url) == False and attempt < max_attempts):
+        attempt = attempt + 1
+        print(f"{attempt} attempt done Data not fetched")
+    if(attempt == max_attempts):
+        print(f"check the Url : {url} ,3 attempts failed")
+    print("Data fetched")
+        
+
+
+# Display the updated DataFrame 
 print(df)
 
 # Save the updated DataFrame to a new Excel file
